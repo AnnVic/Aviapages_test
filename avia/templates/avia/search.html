@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-qKXV1j0HvMUeCBQ+QVp7JcfGl760yU08IQ+GpUo5hlbpg51QRiuqHAJz8+BrxE/N"
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'avia/style.css' %}">
+    <title>
+        Search Aircraft
+    </title>
+</head>
+
+<body>
+    {% block content %}
+    <h2>Search Aircraft</h2>
+    <form method="GET">
+        {% csrf_token %}
+        <input type="text" id="search-query" name="q" placeholder="Search by tail number or serial number">
+        <button type="submit">Search</button>
+    </form>
+
+    {% if results %}
+    <table>
+        <thead>
+            <tr>
+                <th>Tail Number</th>
+                <th>Serial Number</th>
+                <th>Aircraft Type Name</th>
+                <th>Year of Production</th>
+                <th class="image">Images</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in results %}
+            <tr data-bs-toggle="collapse" data-bs-target="#collapse{{ item.aircraft.tail_number }}"
+                aria-expanded="false" aria-controls="collapse{{ item.id }}">
+                <td>{{ item.aircraft.tail_number }}</td>
+                <td>{{ item.aircraft.serial_number }}</td>
+                <td>{{ item.aircraft.aircraft_type_name }}</td>
+                <td>{{ item.aircraft.year_of_production }}</td>
+                <td class="images">
+                    {% if item.aircraft.images %}
+                    {% for image in item.aircraft.images|slice:":3" %}
+                    <img src="{{image.url}}" width="150" height="100">
+                    {% endfor %}
+                    {% else %}
+                    <p>No images.</p>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td colspan="5" class="hidden-row">
+                    <div class="collapse" id="collapse{{ item.aircraft.tail_number }}">
+                        <div class="card card-body">
+                            <p><strong>Aircraft class name: </strong> {{item.aircraft.aircraft_class_name}}</p>
+
+                            {% for i in item.company %}
+                            <p><strong>Company name: </strong>{{i.name}}</p>
+                            <p><strong>Company phone: </strong>{{i.phone}}</p>
+                            <p><strong>Company website: </strong>{{i.website}}</p>
+                            {% endfor %}
+
+                            {% for i in item.airport %}
+                            <p><strong>Airport ICAO: </strong>{{i.icao}}</p>
+                            <p><strong>Airport IATA: </strong>{{i.iata}}</p>
+                            <p><strong>Airport name: </strong>{{i.name}}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+
+    {% endif %}
+
+    {% if error_message %}
+    <p>{{ error_message }}</p>
+    {% endif %}
+
+    {% endblock %}
+</body>
+
+</html>
